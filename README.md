@@ -1,6 +1,6 @@
 # strudel-sketch
 
-Reusable four-number bass and hook helpers for Strudel. No dependencies or audio side effects.
+Reusable four-number bass and hook helpers for Strudel. No dependencies. Automatically registers the acid envelope effects when loaded in Strudel.
 
 ## Play
 
@@ -51,3 +51,17 @@ SHA and reload the editor to load that version.
 Run `npm test` (Node.js 18+). Tests cover mapping, exact hook output, ranges,
 validation, random input bounds, and the browser namespace. Audio playback in
 the Strudel editor is a separate manual check.
+
+## Acid envelopes
+
+The library import also registers `.acidenv(x)` and `.acidenvi(x)`:
+
+```js
+$: n("0 2 4 -1").scale('G2:major').s('sawtooth').acidenv(0.6)
+$: n("0 2 4 -1").scale('G4:major').s('sawtooth').acidenvi(0.4)
+```
+
+`acidenv` applies `lpf(100).lpenv(x * 9).lps(.2).lpd(.12)`.
+`acidenvi` applies `hpf(200).hpenv(x * 9).hps(.2).hpd(.12)`.
+If importing before Strudel initializes, call `StrudelSketch.registerEffects(register)`
+once after its `register` function becomes available.

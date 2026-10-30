@@ -36,3 +36,26 @@ test('random seeds and browser namespace are usable', () => {
   }
   assert.equal(globalThis.StrudelSketch.makeBassHook, makeBassHook)
 })
+
+test('import registers both acid envelopes with the supplied effect chains', async () => {
+  const effects = new Map()
+  globalThis.register = (name, fn) => effects.set(name, fn)
+  try {
+    await import('../lib/bass-hook.js?effects-test')
+  } finally {
+    delete globalThis.register
+  }
+  assert.deepEqual([...effects.keys()], ['acidenv', 'acidenvi'])
+  for (const [name, methods] of [
+    ['acidenv', [['lpf', 100], ['lpenv', 4.5], ['lps', .2], ['lpd', .12]]],
+    ['acidenvi', [['hpf', 200], ['hpenv', 4.5], ['hps', .2], ['hpd', .12]]]
+  ]) {
+    const calls = []
+    const pattern = Object.fromEntries(methods.map(([method]) => [method, value => {
+      calls.push([method, value])
+      return pattern
+    }]))
+    assert.equal(effects.get(name)(.5, pattern), pattern)
+    assert.deepEqual(calls, methods)
+  }
+})
