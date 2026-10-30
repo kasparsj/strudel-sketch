@@ -24,8 +24,58 @@ test('all inputs wrap into the same bass range, including endpoints', () => {
 test('invalid seeds and scale sizes fail clearly', () => {
   for (const value of [-1, 101, 0.5, '14', NaN]) assert.throws(() => toDegree(value))
   for (const size of [0, -1, 2.5, NaN]) assert.throws(() => makeBassHook([1, 2, 3, 4], size))
-  for (const values of [[], [1, 2, 3], [1, 2, 3, 4, 5], null]) assert.throws(() => makeBassHook(values))
+  for (const values of [[], [1, 2, 3], [1, 2, 3, 4, 5, 6], null]) assert.throws(() => makeBassHook(values))
   assert.throws(() => makeHook([0, 2, '4', -1]))
+})
+
+test('fifth seed varies the hook reproducibly without changing bass or inputs', () => {
+  const numbers = Object.freeze([14, 23, 39, 97, 42])
+  const original = makeBassHook(numbers.slice(0, 4))
+  const result = makeBassHook(numbers)
+  assert.deepEqual(result.degrees, original.degrees)
+  assert.equal(result.bass, original.bass)
+  assert.deepEqual(Object.keys(result), ['degrees', 'bass', 'hook'])
+  assert.equal(result.hook, '2 4 2 ~ -3 7 -5 -8 7 1 -1 ~ 0 ~ 10 ~')
+  assert.deepEqual(makeBassHook(numbers), result)
+  assert.notEqual(makeBassHook([14, 23, 39, 97, 0]).hook, original.hook)
+  assert.notEqual(makeBassHook([14, 23, 39, 97, 100]).hook, result.hook)
+})
+
+test('variation preserves phrase length, rest count and scale pitch classes for every seed', () => {
+  for (const size of [1, 5, 7, 12]) {
+    // Include identical pitch inputs: octave/rhythm variation still applies.
+    for (const pitches of [[14, 23, 39, 97], [0, 0, 0, 0]]) {
+      const original = makeBassHook(pitches, size).hook.split(' ')
+      const pitchClasses = steps => steps.filter(step => step !== '~')
+        .map(step => ((Number(step) % size) + size) % size).sort((a, b) => a - b)
+      const restPatterns = new Set()
+      const contours = new Set()
+      for (let seed = 0; seed <= 100; seed++) {
+        const inputs = [...pitches, seed]
+        const result = makeBassHook(inputs, size)
+        assert.deepEqual(makeBassHook(inputs, size), result)
+        const steps = result.hook.split(' ')
+        assert.equal(steps.length, 16)
+        assert.equal(steps.filter(step => step === '~').length, 4)
+        assert.ok(steps.every(step => step === '~' || /^-?\d+$/.test(step)))
+        assert.deepEqual(pitchClasses(steps), pitchClasses(original))
+        restPatterns.add(steps.map(step => step === '~' ? '-' : 'x').join(''))
+        const notes = steps.filter(step => step !== '~').map(Number)
+        contours.add(notes.slice(1).map((note, i) => note - notes[i]).join(' '))
+      }
+      assert.ok(restPatterns.size > 1, 'fifth seed changes rest positions')
+      assert.ok(contours.size > 1, 'fifth seed changes melodic contour')
+    }
+  }
+})
+
+test('invalid fifth seeds and missing pitch seeds are rejected', () => {
+  for (const seed of [-1, 101, .5, '42', NaN, Infinity, null, undefined]) {
+    assert.throws(() => makeBassHook([14, 23, 39, 97, seed]), RangeError)
+  }
+  assert.throws(() => makeBassHook([14, 23, , 97, 42]), RangeError)
+  assert.throws(() => makeBassHook([14, 23, 39, 97, ,]), RangeError)
+  assert.throws(() => makeBassHook([14, 23, 39, 97, 42], 0), RangeError)
 })
 
 test('random seeds and browser namespace are usable', () => {

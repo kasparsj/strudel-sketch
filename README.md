@@ -1,6 +1,6 @@
 # strudel-sketch
 
-Reusable four-number bass and hook helpers for Strudel. No dependencies. Automatically registers the acid envelope effects when loaded in Strudel.
+Reusable four-number bass and hook helpers for Strudel, with an optional fifth number for melodic variation. No dependencies. Automatically registers the acid envelope effects when loaded in Strudel.
 
 ## Play
 
@@ -25,12 +25,31 @@ Use `StrudelSketch.randomFour()` instead of the array for fresh inputs.
 Use `.slow(3)` on the hook pattern to stretch it over three cycles.
 Random inputs are regenerated whenever that call is evaluated; fixed inputs are deterministic.
 
+### Optional fifth number
+
+```js
+const { bass, hook } = StrudelSketch.makeBassHook([14, 23, 39, 97, 42])
+```
+
+The first four numbers still choose the bass notes. The fifth (a whole number
+from 0 through 100) reshapes the hook: it shuffles notes and rests and moves
+some notes one scale octave up or down. The phrase keeps 16 equal steps,
+12 notes, and four rests, but their positions and the melodic contour vary.
+The original hook's pitch classes are preserved; octave moves can extend its range.
+
+The same five numbers always produce the same result on reevaluation.
+Zero is a valid variation seed; omit the fifth number to get the exact original
+motif. `randomFour()` still returns only four pitch inputs.
+For a performance, you can ask a fifth audience member for this number after
+revealing the original melody, then add it to the array and hear the transformation.
+Load the updated library before using five inputs (see caching notes below).
+
 ## Helpers
 
 - `randomFour()` returns four integers from 0 through 100, inclusive.
 - `toDegree(value, size = 7)` returns `((value + 1) % size) - 1`.
 - `makeHook(degrees, size = 7)` returns the original 16-step hook as mini-notation.
-- `makeBassHook(numbers, size = 7)` returns `{ degrees, bass, hook }`.
+- `makeBassHook(numbers, size = 7)` accepts four pitch inputs plus an optional fifth variation input, and returns `{ degrees, bass, hook }`. `degrees` always contains four values; the second argument remains the scale size.
 
 `[14, 23, 39, 97]` maps to `[0, 2, 4, -1]`.
 For seven-note scales, degrees stay between -1 and 5: the final scale note
@@ -48,8 +67,8 @@ jsDelivr caches branch URLs, and browsers cache imported modules. For reproducib
 sketches, replace `@main` with a Git commit SHA. After library edits, use the new
 SHA and reload the editor to load that version.
 
-Run `npm test` (Node.js 18+). Tests cover mapping, exact hook output, ranges,
-validation, random input bounds, and the browser namespace. Audio playback in
+Run `npm test` (Node.js 18+). Tests cover mapping, exact hook output, seeded
+variation, phrase structure, ranges, validation, random input bounds, and the browser namespace. Audio playback in
 the Strudel editor is a separate manual check.
 
 ## Acid envelopes
