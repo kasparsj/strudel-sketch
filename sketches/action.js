@@ -4,7 +4,7 @@ await import('https://cdn.jsdelivr.net/gh/kasparsj/strudel-sketch@main/lib/bass-
 const tonic = 'G'
 const scaleType = 'major'
 const numbers = [14, 23, 39, 97] // Or: StrudelSketch.randomFour()
-const { bass, hook, hook2 } = StrudelSketch.makeBassHook(numbers, 7)
+const { bass, hook } = StrudelSketch.makeBassHook(numbers, 7)
 
 $: n(mini(bass))
   .scale(tonic + '1:' + scaleType)
@@ -12,8 +12,9 @@ $: n(mini(bass))
   .lpf(450)
   .gain(0.35)
 
-// Use mini(hook2) for the slower version.
+// Stretch the hook over three cycles.
 $: n(mini(hook))
+  .slow(3)
   .scale(tonic + '4:' + scaleType)
   .s('triangle')
   .release(0.2)

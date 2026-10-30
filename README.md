@@ -15,14 +15,14 @@ You can instead put that line in Settings → Prebake, save, and reload Strudel.
 Then your action sketches only need to call the helpers:
 
 ```js
-const { bass, hook, hook2 } = StrudelSketch.makeBassHook([14, 23, 39, 97])
+const { bass, hook } = StrudelSketch.makeBassHook([14, 23, 39, 97])
 
 $: n(mini(bass)).scale('G1:major').s('sawtooth').lpf(450).gain(0.35)
-$: n(mini(hook)).scale('G4:major').s('triangle').release(0.2).gain(0.25)
+$: n(mini(hook)).slow(3).scale('G4:major').s('triangle').release(0.2).gain(0.25)
 ```
 
 Use `StrudelSketch.randomFour()` instead of the array for fresh inputs.
-Use `mini(hook2)` for the hook stretched over three cycles.
+Use `.slow(3)` on the hook pattern to stretch it over three cycles.
 Random inputs are regenerated whenever that call is evaluated; fixed inputs are deterministic.
 
 ## Helpers
@@ -30,7 +30,7 @@ Random inputs are regenerated whenever that call is evaluated; fixed inputs are 
 - `randomFour()` returns four integers from 0 through 100, inclusive.
 - `toDegree(value, size = 7)` returns `((value + 1) % size) - 1`.
 - `makeHook(degrees, size = 7)` returns the original 16-step hook as mini-notation.
-- `makeBassHook(numbers, size = 7)` returns `{ degrees, bass, hook, hook2 }`.
+- `makeBassHook(numbers, size = 7)` returns `{ degrees, bass, hook }`.
 
 `[14, 23, 39, 97]` maps to `[0, 2, 4, -1]`.
 For seven-note scales, degrees stay between -1 and 5: the final scale note

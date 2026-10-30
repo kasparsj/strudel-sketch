@@ -7,7 +7,7 @@ test('original seeds preserve bass and exact 16-step hook', () => {
   assert.deepEqual(result.degrees, [0, 2, 4, -1])
   assert.equal(result.bass, '<0 2 4 -1>')
   assert.equal(result.hook, '0 2 4 ~ 3 2 0 ~ -1 0 2 1 ~ -1 -3 ~')
-  assert.equal(result.hook2, '[' + result.hook + ']/3')
+  assert.deepEqual(Object.keys(result), ['degrees', 'bass', 'hook'])
 })
 
 test('all inputs wrap into the same bass range, including endpoints', () => {
